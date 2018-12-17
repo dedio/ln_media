@@ -5,7 +5,6 @@ from requests import get
 from json import loads
 from lxml import html, etree
 from re import findall, match
-from time import strftime
 from datetime import datetime, timedelta
 
 class LanacionComArScraper():
@@ -56,6 +55,11 @@ class LanacionComArScraper():
             social.append(','.join(twitter))
         return ''.join(social)
 
+    def parse_fecha(self, cod):
+        treehtml = html.fromstring(cod)
+        fecha = ''.join(treehtml.xpath('//meta[@property="article:published_time"]/@content'))
+        return fecha.replace('T', ' ')[:-1]
+
     def carga(self, unid):
         with open(archivo_csv,'a') as fou:
             fou.write(unid)
@@ -97,4 +101,5 @@ if __name__=='__main__':
         cf = s.request(url)
         videos = s.parse_video(cf)
         social = s.parse_social(cf)
-        s.carga(("%s,%s\n" % (url, (videos + social))))
+        fecha = s.parse_fecha(cf)
+        s.carga(("%s,%s,%s\n" % (fecha, url, (videos + social))))
